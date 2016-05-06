@@ -1,0 +1,25 @@
+#some dependencies needed to be installed
+sudo apt-get install libsqlite3-dev # for dm-sqlite-adapter
+sudo apt-get install libxml2-dev    # for data-mapper
+sudo apt-get install libmysqlclient-dev # for do_mysql
+
+#make sure you have correct permission for /var/lib/gems
+#to change the permission, check username 
+$ whoami
+
+# and change owenerchip of /var/lib/gems
+sudo chown -R saurabh /var/lib/gems
+
+# give write and execute permission 
+sudo chmod -R 744 /var/lib/gems 
+
+sudo apt-get install bundler
+
+# install all dependencies listed in Gemfile
+bundle install
+
+#setting in this line of .rb file
+DataMapper.setup(:default, "mysql://root:root@localhost/test_dynamic")
+                            database://user:password@localhost/database_name
+
+
