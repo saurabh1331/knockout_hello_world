@@ -1,0 +1,82 @@
+%html
+  %head
+    %script{:src =>"http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js", :type =>"text/javascript"}
+    %script{:src =>"knockout-2.2.1.js", :type =>"text/javascript"}
+    %script{:src =>"bootstrap.min.js", :type =>"text/javascript"}
+    %script{:src =>"bootstrap.js", :type =>"text/javascript"}
+    %link{:href => "bootstrap.min.css", :media => "screen", :rel => "stylesheet"}/
+    %link{:href => "bootstrap.css", :media => "screen", :rel => "stylesheet"}/
+    %link{:href => "bootstrap-responsive.min.css", :media => "screen", :rel => "stylesheet"}/
+  %body
+    %table.table.table-striped
+      %thead
+        %th.text-info Leader_id
+        %th.text-info First name
+        %th.text-info College
+        %th.text-info Joined_at
+      %tbody{"data-bind" => "foreach: interns"}
+        %tr
+          %td{"data-bind"=>"text: leader_id"}
+          %td{"data-bind"=>"text: name"}
+          %td{"data-bind"=>"text: college"}
+          %td{"data-bind"=>"text: joined_at"}
+          %td 
+            %input.btn{"data-bind"=>"click:$parent.removeIntern",:type=>"button",:value=>"Delete"}
+      %h3.lead Add Intern
+      %div.from-actions        
+        %form.form-inline{"data-bind"=>"submit:addIntern"}
+          %input.input-medium.search-query{"data-bind"=>"value:newname ",:type=>"text",:placeholder=>"Name"}
+          %input.input-medium.search-query{"data-bind"=>"value:newcollege",:type=>"text",:placeholder=>"College"}
+          %input.input-medium.search-query{"data-bind"=>"value:newjoined_at",:type=>"text",:placeholder=>"Joining_date"}
+          %input.input-medium.search-query{"data-bind"=>"value:newleader",:type=>"text",:placeholder=>"Leader_Name"} 
+          %input.btn.btn-mini.btn-primary{:type=>"submit"}
+    %script
+      function Intern(data)
+      {
+      this.name=ko.observable(data.name); 
+      this.college = ko.observable(data.college);
+      this.joined_at = ko.observable(data.joined_at);
+      this.id = ko.observable(data.id);
+      this.leader_id = ko.observable(data.leader_id)
+      }
+      function InternViewModel() {
+      var t = this;
+      t.interns = ko.observableArray([]);
+      $.getJSON("/interns", function(data) {
+      var interns = $.map(data, function(item) { return new Intern(item) });
+      t.interns(interns);
+      });
+      t.newname = ko.observable();
+      t.newcollege = ko.observable();
+      t.newjoined_at = ko.observable();
+      t.newleader=ko.observable();
+      t.removeIntern = function(intern) {
+      $.get("/del",intern,function(returndata)
+      {
+      });
+      t.interns.remove(intern);
+      };
+      t.addIntern = function() {
+      var newIntern = new Intern({name: this.newname(), college:this.newcollege(), joined_at:this.newjoined_at()});
+      $.post("/getleaderid",{data:t.newleader()},function(returndata)
+      {
+      alert(returndata); 
+      newIntern.leader_id(returndata);
+      t.interns.push(newIntern);
+      t.saveIntern(newIntern); 
+      t.newname("");
+      t.newcollege("");
+      t.newjoined_at("");
+      t.newleader("");     
+      })
+      };
+      var data = t.newleader();      
+      t.saveIntern = function(intern){
+      var t = ko.toJS(intern);
+      $.get("/save",t,function(returndata)
+      {
+      intern.id(returndata);
+      });
+      }
+      } 
+      ko.applyBindings(new InternViewModel());
